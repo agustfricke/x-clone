@@ -32,18 +32,3 @@ type GitHubResponse struct {
 	AvatarURL string 
 }
 
-type SignUpInput struct {
-	Name            string 
-	Email           string 
-	Password        string 
-}
-
-type SignInInput struct {
-	Email     string 
-	Password  string 
-  Token     string
-}
-
-type OTPInput struct {
-	Token   string 
-}
