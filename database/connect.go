@@ -3,6 +3,7 @@ package database
 import (
 	"fmt"
 
+	"github.com/agustfricke/x-clone/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

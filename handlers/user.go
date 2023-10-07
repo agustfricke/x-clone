@@ -2,28 +2,30 @@ package handlers
 
 import (
 	"github.com/agustfricke/x-clone/database"
+	"github.com/agustfricke/x-clone/models"
 	"github.com/gofiber/fiber/v2"
 )
 
 func UserProfile(c *fiber.Ctx) error {
 	  id := c.Params("id")
     db := database.DB
+    var user models.User
 
     if err := db.First(&user, "ID = ?", id).Error; err != nil {
-      return c.Status(fiber.StatusBadRequest)
+      return c.SendStatus(fiber.StatusBadRequest)
     }
 
     if err := db.Preload("Posts").Find(&user).Error; err != nil {
-      return c.Status(fiber.StatusBadRequest)
+      return c.SendStatus(fiber.StatusInternalServerError)
     }
 
-	  return c.Render("profile", fiber.Map{
+	  return c.Render("user_profile", fiber.Map{
         "User": user,
 	})
 }
 
-func UpdateProfile(c *fiber.Ctx) error {
-}
+// func UpdateProfile(c *fiber.Ctx) error {
+// }
 
 func MyUserProfile(c *fiber.Ctx) error {
     db := database.DB
@@ -31,14 +33,14 @@ func MyUserProfile(c *fiber.Ctx) error {
 	  user := c.Locals("user").(*models.User)
 
     if err := db.First(&user, "ID = ?", user.ID).Error; err != nil {
-      return c.Status(fiber.StatusBadRequest)
+      return c.SendStatus(fiber.StatusBadRequest)
     }
 
     if err := db.Preload("Posts").Find(&user).Error; err != nil {
-      return c.Status(fiber.StatusBadRequest)
+      return c.SendStatus(fiber.StatusInternalServerError)
     }
 
-	  return c.Render("profile", fiber.Map{
+	  return c.Render("my_profile", fiber.Map{
         "User": user,
 	})
   /*

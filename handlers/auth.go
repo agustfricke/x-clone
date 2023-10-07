@@ -1,43 +1,53 @@
 package handlers
 
 import (
-  "fmt"
-  "strings"
-  "time"
+	"bytes"
+	"fmt"
+	"net/smtp"
+	"strings"
+	"text/template"
+	"time"
 
-  "github.com/gofiber/fiber/v2"
-  "github.com/golang-jwt/jwt"
-  "github.com/pquerna/otp/totp"
-  "golang.org/x/crypto/bcrypt"
+	"github.com/agustfricke/x-clone/config"
+	"github.com/agustfricke/x-clone/database"
+	"github.com/agustfricke/x-clone/models"
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt"
+	"golang.org/x/crypto/bcrypt"
 )
 
 
+
 func SignUp(c *fiber.Ctx) error {
-  var payload *models.SignUpInput
+
+  name := c.FormValue("name")
+  email     := c.FormValue("email")
+  password  := c.FormValue("password")
+
   db := database.DB
 
-  if err := c.BodyParser(&payload); err != nil {
-    return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+  if name == "" || email == "" || password == "" {
+    return c.SendStatus(fiber.StatusBadRequest)
   }
 
-  hashedPassword, err := bcrypt.GenerateFromPassword([]byte(payload.Password), bcrypt.DefaultCost)
+  hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 
   if err != nil {
     return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
   }
 
   newUser := models.User{
-    Name:     payload.Name,
-    Email:    strings.ToLower(payload.Email),
+    Name: name, 
+    Email:  strings.ToLower(email),
     Password: string(hashedPassword),
   }
 
   result := db.Create(&newUser)
 
   if result.Error != nil && strings.Contains(result.Error.Error(), "duplicate key value violates unique") {
-    return c.Status(fiber.StatusConflict).JSON(fiber.Map{"status": "fail", "message": "User with that email already exists"})
+    return c.SendStatus(fiber.StatusConflict)
   } else if result.Error != nil {
-    return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "error", "message": "Something bad happened"})
+    return c.SendStatus(fiber.StatusBadGateway)
   }
 
   tokenByte := jwt.New(jwt.SigningMethodHS256)
@@ -59,83 +69,103 @@ func SignUp(c *fiber.Ctx) error {
     return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": fmt.Sprintf("generating JWT Token failed: %v", err)})
   }
 
-  SendEmail(tokenString, payload.Email)
+  SendEmail(tokenString, email)
 
-  return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": &newUser}})
+	return c.Render("success_signup", fiber.Map{
+        "User": newUser,
+	})
 }
 
 
-func SignIn(c *fiber.Ctx) error {
-  var payload *models.SignInInput
-  db := database.DB
+func SendEmail(token string, email string) {
+	secretPassword := config.Config("EMAIL_SECRET_KEY")
+	host := config.Config("HOST")
+	auth := smtp.PlainAuth(
+		"",
+		"agustfricke@gmail.com",
+		secretPassword,
+		"smtp.gmail.com",
+	)
 
-  if err := c.BodyParser(&payload); err != nil {
-    return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": err.Error()})
+	tmpl, err := template.ParseFiles("templates/verify_email.html")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	data := struct {
+		Token string
+		Host  string
+	}{
+		Token: token,
+		Host:  host,
+	}
+
+	var bodyContent bytes.Buffer
+	err = tmpl.Execute(&bodyContent, data)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	content := fmt.Sprintf("To: %s\r\n"+
+		"Subject: Verify Your Email Address\r\n"+
+		"Content-Type: text/html; charset=utf-8\r\n"+
+		"\r\n"+
+		"%s", email, bodyContent.String())
+
+	err = smtp.SendMail(
+		"smtp.gmail.com:587",
+		auth,
+		"agustfricke@gmail.com",
+		[]string{email},
+		[]byte(content),
+	)
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+
+
+func VerifyEmail(c *fiber.Ctx) error {
+  tokenString := c.Params("token")
+
+  if tokenString == "" {
+    return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-  var user models.User
-  result := db.First(&user, "email = ?", strings.ToLower(payload.Email))
-  if result.Error != nil {
-    return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or Password"})
-  }
-
-  if !user.Verified {
-    return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "No estas verificado bro!"})
-  }
-
-  err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(payload.Password))
-  if err != nil {
-    return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"status": "fail", "message": "Invalid email or Password"})
-  }
-  
-  if user.Otp_enabled == true {
-    valid := totp.Validate(payload.Token, user.Otp_secret)
-    if !valid {
-      return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-        "status":  "fail",
-        "message": "Token 2FA not valid",
-      })
+  tokenByte, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+    if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
+      return nil, fmt.Errorf("unexpected signing method: %s", jwtToken.Header["alg"])
     }
-
-  }
-
-  tokenByte := jwt.New(jwt.SigningMethodHS256)
-
-  now := time.Now().UTC()
-  claims := tokenByte.Claims.(jwt.MapClaims)
-  expDuration := time.Hour * 24
-
-  claims["sub"] = user.ID
-  claims["exp"] = now.Add(expDuration).Unix()
-  claims["iat"] = now.Unix()
-  claims["nbf"] = now.Unix()
-
-  tokenString, err := tokenByte.SignedString([]byte(config.Config("SECRET_KEY")))
+    return []byte(config.Config("SECRET_KEY")), nil
+  })
 
   if err != nil {
-    return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": fmt.Sprintf("generating JWT Token failed: %v", err)})
+    return c.SendStatus(fiber.StatusUnauthorized)
   }
 
-  c.Cookie(&fiber.Cookie{
-    Name:     "token",
-    Value:    tokenString,
-    Path:     "/",
-    MaxAge:   24 * 60 * 60,
-    Secure:   false,
-    HTTPOnly: true,
-    Domain:   "localhost",
-  })
+  claims, ok := tokenByte.Claims.(jwt.MapClaims)
+  if !ok || !tokenByte.Valid {
+    return c.SendStatus(fiber.StatusUnauthorized)
+  }
 
-  return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "token": tokenString})
+	var user models.User
+  db := database.DB
+	db.First(&user, "id = ?", fmt.Sprint(claims["sub"]))
+
+  if float64(user.ID) != claims["sub"] {
+    return c.SendStatus(fiber.StatusForbidden)
+  }
+
+  user.Verified = true
+
+  if err := db.Save(&user).Error; err != nil {
+    return c.SendStatus(fiber.StatusInternalServerError)
+  }
+
+  return c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "success", "data": fiber.Map{"user": user}})
 }
 
-func Logout(c *fiber.Ctx) error {
-  expired := time.Now().Add(-time.Hour * 24)
-  c.Cookie(&fiber.Cookie{
-    Name:    "token",
-    Value:   "",
-    Expires: expired,
-  })
-  return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success"})
-}
+
 
