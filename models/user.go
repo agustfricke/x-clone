@@ -3,20 +3,24 @@ package models
 import "gorm.io/gorm"
 
 type User struct {
-  gorm.Model
-	Name          string  
-	Email         string  
-	Password      string 
-	Verified      bool    
-	SocialID      string 
-	Avatar        string  
-	Otp_enabled   bool   
-	Otp_verified  bool  
-	Otp_secret    string
-	Otp_auth_url  string
+	gorm.Model
+	Name         string
+	Email        string
+	Password     string
+	Verified     bool
+	SocialID     string
+	Avatar       string
+	OtpEnabled   bool
+	OtpVerified  bool
+	OtpSecret    string
+	OtpAuthURL   string
 
-	Posts       []Post
+	Posts     []Post
+	Followers []Follow
+	Following []Follow
 }
+
+
 
 type GoogleResponse struct {
 	ID       string 

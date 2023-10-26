@@ -5,9 +5,20 @@ import "gorm.io/gorm"
 
 type Post struct {
   gorm.Model
-	Body        string  
-	Image       string  
-	UserID      uint
-  User        User  
+	Content string  
+	Image   string  
+  liked   []User
+  repost  []User
+	UserID  uint
+  User    User  
 }
 
+type Comment struct {
+  gorm.Model
+	Content string  
+	Image   string  
+  liked   []User
+  repost  []User
+	UserID  uint
+  User    User  
+}
