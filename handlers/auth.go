@@ -17,7 +17,6 @@ import (
 )
 
 
-
 func SignUp(c *fiber.Ctx) error {
 
   name := c.FormValue("name")
@@ -71,9 +70,7 @@ func SignUp(c *fiber.Ctx) error {
 
   SendEmail(tokenString, email)
 
-	return c.Render("success_signup", fiber.Map{
-        "User": newUser,
-	})
+  return c.SendStatus(fiber.StatusCreated)
 }
 
 

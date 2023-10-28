@@ -3,13 +3,29 @@
   <head>
     <title>Fiber crud app</title>
     <link rel="stylesheet" href="styles/styles.css" />
-    <script src="https://unpkg.com/htmx.org@1.9.4"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <meta name="viewport" content="width=device-width,initial-scale=1" />
   </head>
-  <body>
-    {{template "header" .}}
-    <div>{{embed}}</div>
+  <style>
+    body {
+      background-color: #0a0a0a;
+      color: #e2e8f0;
+    }
+  </style>
+  <body class="bg-neutral-950 min-h-screen">
+    <div class="grid grid-cols-3 gap-4">
+      <div id="leftHeader" class="text-end">{{template "left_header" .}}</div>
+      <div class="">{{embed}}</div>
+      <div id="rightHeader" class="">{{template "right_header" .}}</div>
+    </div>
+
+    <script>
+      var currentPath = window.location.pathname;
+      if (currentPath.startsWith("/sign_up_view")) {
+        document.getElementById("leftHeader").style.display = "none";
+        document.getElementById("rightHeader").style.display = "none";
+      }
+    </script>
   </body>
   <script src="/scripts/main.js"></script>
 </html>

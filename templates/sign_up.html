@@ -1,9 +1,63 @@
-<form hx-post="/sign_up/" hx-indicator="#spinner">
-  <input type="text" name="name" placeholder="name" />
-  <input type="text" name="email" placeholder="Emal" />
-  <input type="text" name="password" placeholder="name" />
-  <button type="submit">
-    Submit
-    <span class="spinner" id="spinner">....</span>
-  </button>
+<form id="signup">
+  <input type="text" id="name" name="name" placeholder="Name" />
+  <input type="text" id="email" name="email" placeholder="Email" />
+  <input type="password" id="password" name="password" placeholder="Password" />
+  <button type="submit">Submit</button>
 </form>
+
+<div id="loading-message" style="display: none">Cargando...</div>
+
+<div id="success-message" style="display: none">
+  <h1>Te hemos enviado un correo <span id="success-email"></span></h1>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("signup");
+    var loadingMessage = document.getElementById("loading-message");
+    var successMessage = document.getElementById("success-message");
+    var successEmail = document.getElementById("success-email"); // Nuevo elemento span
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      // Obtén los valores de name, email y password
+      var name = document.getElementById("name").value;
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+
+      // Oculta el formulario
+      form.style.display = "none";
+
+      // Muestra el mensaje de "Cargando"
+      loadingMessage.style display = "block";
+
+      // Crea un objeto FormData con los datos del formulario
+      var formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+
+      // Realiza una solicitud Fetch para enviar los datos al servidor
+      fetch("/signup", {
+        method: "POST",
+        body: formData,
+      })
+        .then(function (response) {
+          loadingMessage.style.display = "none"; // Oculta el mensaje de "Cargando"
+
+          if (response.status === 201) {
+            // Muestra el mensaje de éxito con el valor de email
+            successMessage.style.display = "block";
+            successEmail.textContent = email; // Establece el contenido del span con el valor de email
+          } else {
+            // Maneja la respuesta en caso de error
+            console.error("Error en la carga");
+          }
+        })
+        .catch(function (error) {
+          console.error("Error en la solicitud: " + error);
+        });
+    });
+  });
+</script>

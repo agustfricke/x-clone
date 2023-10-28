@@ -21,7 +21,8 @@ func main() {
   app.Static("/", "./public")
 
   app.Get("/sign_up_view", views.SignUpView)
-  app.Post("/sign_up", handlers.SignUp)
+  app.Get("/home", views.HomeView)
+  app.Post("/signup", handlers.SignUp)
   app.Get("/verify/:token", handlers.VerifyEmail)
 
   app.Listen(":8080")
