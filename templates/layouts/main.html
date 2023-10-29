@@ -20,7 +20,7 @@
     }
   </style>
   <body class="bg-neutral-950 min-h-screen">
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid grid-cols-3 gap-4" id="grid-me-daddy">
       <div id="leftHeader" class="text-end">{{template "left_header" .}}</div>
       <div class="">{{embed}}</div>
       <div id="rightHeader" class="">{{template "right_header" .}}</div>
@@ -29,8 +29,19 @@
     <script>
       var currentPath = window.location.pathname;
       if (currentPath.startsWith("/sign_up_view")) {
-        document.getElementById("leftHeader").style.display = "none";
-        document.getElementById("rightHeader").style.display = "none";
+        var gridMeDaddy = document.getElementById("grid-me-daddy");
+        if (gridMeDaddy) {
+          gridMeDaddy.removeAttribute("class");
+        }
+
+        var leftHeader = document.getElementById("leftHeader");
+        var rightHeader = document.getElementById("rightHeader");
+        if (leftHeader) {
+          leftHeader.style.display = "none";
+        }
+        if (rightHeader) {
+          rightHeader.style.display = "none";
+        }
       }
     </script>
   </body>

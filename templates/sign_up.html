@@ -1,9 +1,53 @@
-<form id="signup">
-  <input type="text" id="name" name="name" placeholder="Name" />
-  <input type="text" id="email" name="email" placeholder="Email" />
-  <input type="password" id="password" name="password" placeholder="Password" />
-  <button type="submit">Submit</button>
-</form>
+<div
+  class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="m-5 p-10 bg-grey-3">
+    <div class="w-[300px] max-w-md space-y-8 md:w-[400px] lg:w-[400px]">
+      <div>
+        <h2 class="mt-6 text-center text-3xl text-grey">Sign up in X</h2>
+      </div>
+      <form>
+        <input
+          id="name"
+          name="name"
+          placeholder="Name"
+          placeholder="Name"
+          class="border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer my-3 bg-transparent outline-neutral-800"
+        />
+
+        <input
+          id="email"
+          name="email"
+          placeholder="Email"
+          class="border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer my-3 bg-transparent outline-neutral-800"
+        />
+
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="*******"
+          class="my-3 border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer bg-transparent outline-neutral-800"
+        />
+        <button
+          type="submit"
+          class="bg-indigo-400 my-2 w-full hover:bg-indigo-500 p-2 px-5 rounded-full text-white font-bold"
+        >
+          Sign up
+        </button>
+      </form>
+
+      <div className="flex items-center justify-between">
+        <div className="text-sm">
+          Don't have an account?
+          <span className="hover:text-sky-500 ml-2 transition-colors">
+            Sign up here!
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="loading-message" style="display: none">Cargando...</div>
 
