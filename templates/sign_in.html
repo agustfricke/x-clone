@@ -1,0 +1,206 @@
+<div
+  class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+>
+  <div class="m-5 p-10 bg-grey-3">
+    <div class="w-[300px] max-w-md space-y-8 md:w-[400px] lg:w-[400px]">
+      <div>
+        <h2 class="mt-6 text-center text-3xl text-grey">Sign in to X</h2>
+      </div>
+
+      <button
+        class="bg-slate-100 flex justify-center my-2 w-full hover:bg-slate-50 p-2 px-5 rounded-full text-gray-900 font-bold"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          fill="currentColor"
+          class="bi bi-google mt-1 mr-3"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M15.545 6.558a9.42 9.42 0 0 1 .139 1.626c0 2.434-.87 4.492-2.384 5.885h.002C11.978 15.292 10.158 16 8 16A8 8 0 1 1 8 0a7.689 7.689 0 0 1 5.352 2.082l-2.284 2.284A4.347 4.347 0 0 0 8 3.166c-2.087 0-3.86 1.408-4.492 3.304a4.792 4.792 0 0 0 0 3.063h.003c.635 1.893 2.405 3.301 4.492 3.301 1.078 0 2.004-.276 2.722-.764h-.003a3.702 3.702 0 0 0 1.599-2.431H8v-3.08h7.545z"
+          />
+        </svg>
+        Sign in with Google
+      </button>
+
+      <button
+        class="bg-slate-100 flex justify-center my-2 w-full hover:bg-slate-50 p-2 px-5 rounded-full text-gray-900 font-bold"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="23"
+          height="23"
+          fill="currentColor"
+          class="bi bi-github mt-1 mr-3"
+          viewBox="0 0 16 16"
+        >
+          <path
+            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"
+          />
+        </svg>
+        Sign in with GitHub
+      </button>
+
+      <div class="flex items-center">
+        <div class="flex-grow border-t border-slate-400"></div>
+        <div class="mx-2 text-slate-300 text-xl">or</div>
+        <div class="flex-grow border-t border-slate-400"></div>
+      </div>
+
+      <form id="signup">
+        <input
+          id="email"
+          name="email"
+          placeholder="Email"
+          class="border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer bg-transparent outline-neutral-800"
+        />
+
+        <input
+          type="password"
+          id="password"
+          name="password"
+          placeholder="*******"
+          class="my-3 border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer bg-transparent outline-neutral-800"
+        />
+
+        <button
+          type="submit"
+          class="bg-indigo-400 my-2 w-full hover:bg-indigo-500 p-2 px-5 rounded-full text-white font-bold"
+        >
+          Sign in
+        </button>
+
+        <div className="flex items-center justify-between">
+          <div className="text-sm">
+            Don't have an account?
+            <span className="hover:text-indigo-500 ml-2 transition-colors">
+              Sign up here!
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="loading-message" style="display: none">
+  <div
+    role="status"
+    class="flex min-h-full items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+  >
+    <svg
+      aria-hidden="true"
+      class="w-12 h-12 mr-2 text-gray-200 animate-spin dark:text-gray-600 fill-indigo-600"
+      viewBox="0 0 100 101"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+        fill="currentColor"
+      />
+      <path
+        d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+        fill="currentFill"
+      />
+    </svg>
+  </div>
+</div>
+
+<div id="success-message" style="display: none">
+  <div className="flex items-center">
+    <h1 class="text-xl text-center">Please entrer your one time password</h1>
+    <form id="otp">
+      <input
+        type="text"
+        id="code"
+        name="code"
+        placeholder="6 digit code"
+        class="my-3 border-b-[1px] border-neutral-800 w-full p-5 cursor-pointer bg-transparent outline-neutral-800"
+      />
+      <button
+        type="submit"
+        class="bg-indigo-400 my-2 w-full hover:bg-indigo-500 p-2 px-5 rounded-full text-white font-bold"
+      >
+        Submit
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    var form = document.getElementById("signup");
+    var otp_form = document.getElementById("otp");
+
+    var loadingMessage = document.getElementById("loading-message");
+    var successMessage = document.getElementById("success-message");
+    var successEmail = document.getElementById("success-email");
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var code = document.getElementById("code").value;
+
+      otp_form.style.display = "none";
+
+      loadingMessage.style.display = "block";
+
+      fetch("/verify/otp", {
+        method: "POST",
+        body: code,
+      })
+        .then(function (response) {
+          loadingMessage.style.display = "none";
+          console.log(response);
+
+          if (response.status === 200) {
+            window.location.replace("http://localhost:8080/home");
+          } else {
+            console.error("Error en la carga", response.error);
+          }
+        })
+        .catch(function (error) {
+          console.error("Error en la solicitud: ");
+        });
+
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      var email = document.getElementById("email").value;
+      var password = document.getElementById("password").value;
+
+      form.style.display = "none";
+
+      loadingMessage.style.display = "block";
+
+      var formData = new FormData();
+      formData.append("email", email);
+      formData.append("password", password);
+
+      fetch("/signin/oh", {
+        method: "POST",
+        body: formData,
+      })
+        .then(function (response) {
+          loadingMessage.style.display = "none";
+          console.log(response);
+
+          if (response.status === 202) {
+            successMessage.style.display = "block";
+          } else if (response.status == 200) {
+            window.location.replace("http://localhost:8080/home");
+          } else {
+            console.error("Error en la carga", response.error);
+          }
+        })
+        .catch(function (error) {
+          console.error("Error en la solicitud: ");
+        });
+    });
+  });
+</script>

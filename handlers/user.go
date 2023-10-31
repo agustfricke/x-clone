@@ -6,6 +6,14 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func AllUsers(c *fiber.Ctx) error {
+    db := database.DB
+    var user models.User
+
+    db.Find(&user)
+    return c.JSON(user)
+}
+
 func UserProfile(c *fiber.Ctx) error {
 	  id := c.Params("id")
     db := database.DB
