@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/smtp"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -11,11 +12,134 @@ import (
 	"github.com/agustfricke/x-clone/config"
 	"github.com/agustfricke/x-clone/database"
 	"github.com/agustfricke/x-clone/models"
+	"github.com/agustfricke/x-clone/socials"
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt"
-	"golang.org/x/crypto/bcrypt"
 	"github.com/pquerna/otp/totp"
+	"golang.org/x/crypto/bcrypt"
 )
+
+
+func AuthGoogle(c *fiber.Ctx) error {
+	path := socials.ConfigGoogle()
+	url := path.AuthCodeURL("state")
+	return c.Redirect(url)
+}
+
+func CallbackGoogle(c *fiber.Ctx) error {
+  token, error := socials.ConfigGoogle().Exchange(c.Context(), c.FormValue("code"))
+  if error != nil {
+    panic(error)
+  }
+
+  googleResponse := socials.GetGoogleResponse(token.AccessToken)
+
+  db := database.DB 
+  var user models.User
+
+  if err := db.First(&user, googleResponse.ID).Error; err != nil {
+    user = models.User{
+      SocialID:       googleResponse.ID,
+      Email:          googleResponse.Email,
+    }
+    db.Create(&user)
+    c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "created", "user created": user, "google res": googleResponse})
+  } else {
+    c.Status(fiber.StatusFound).JSON(fiber.Map{"status": "found", "user in db": user, "google res": googleResponse})
+  }
+
+  tokenByte := jwt.New(jwt.SigningMethodHS256)
+
+  now := time.Now().UTC()
+  claims := tokenByte.Claims.(jwt.MapClaims)
+  expDuration := time.Hour * 24
+
+  claims["sub"] = user.ID
+  claims["exp"] = now.Add(expDuration).Unix()
+  claims["iat"] = now.Unix()
+  claims["nbf"] = now.Unix()
+
+  tokenString, err := tokenByte.SignedString([]byte(config.Config("SECRET_KEY")))
+
+  if err != nil {
+    return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": fmt.Sprintf("generating JWT Token failed: %v", err)})
+  }
+
+  c.Cookie(&fiber.Cookie{
+    Name:     "token",
+    Value:    tokenString,
+    Path:     "/",
+    MaxAge:   24 * 60 * 60,
+    Secure:   false,
+    HTTPOnly: true,
+    Domain:   "localhost",
+  })
+
+  return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "token": tokenString, "user": user})
+}
+
+func AuthGitHub(c *fiber.Ctx) error {
+	path := socials.ConfigGitHub()
+	url := path.AuthCodeURL("state")
+	return c.Redirect(url)
+}
+
+func CallbackGitHub(c *fiber.Ctx) error {
+
+  token, error := socials.ConfigGitHub().Exchange(c.Context(), c.FormValue("code"))
+  if error != nil {
+    panic(error)
+  }
+  
+  githubResponse := socials.GetGitHubResponse(token.AccessToken)
+
+  db := database.DB 
+  var user models.User
+
+  if err := db.First(&user, githubResponse.ID).Error; err != nil {
+    user = models.User{
+      SocialID:       strconv.Itoa(githubResponse.ID),
+      Email:          githubResponse.Email,
+    }
+    db.Create(&user)
+    c.Status(fiber.StatusCreated).JSON(fiber.Map{"status": "created", "user created": user, "google res": githubResponse})
+  } else {
+    c.Status(fiber.StatusFound).JSON(fiber.Map{"status": "found", "user in db": user, "google res": githubResponse})
+  }
+
+  tokenByte := jwt.New(jwt.SigningMethodHS256)
+
+  now := time.Now().UTC()
+  claims := tokenByte.Claims.(jwt.MapClaims)
+  expDuration := time.Hour * 24
+
+  claims["sub"] = user.ID
+  claims["exp"] = now.Add(expDuration).Unix()
+  claims["iat"] = now.Unix()
+  claims["nbf"] = now.Unix()
+
+  tokenString, err := tokenByte.SignedString([]byte(config.Config("SECRET_KEY")))
+
+  if err != nil {
+    return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{"status": "fail", "message": fmt.Sprintf("generating JWT Token failed: %v", err)})
+  }
+
+  c.Cookie(&fiber.Cookie{
+    Name:     "token",
+    Value:    tokenString,
+    Path:     "/",
+    MaxAge:   24 * 60 * 60,
+    Secure:   false,
+    HTTPOnly: true,
+    Domain:   "localhost",
+  })
+
+  return c.Status(fiber.StatusOK).JSON(fiber.Map{
+    "status": "success", 
+    "token": tokenString, 
+    "user": user, 
+    "github_user": githubResponse})
+}
 
 
 func SignIn(c *fiber.Ctx) error {

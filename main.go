@@ -30,5 +30,11 @@ func main() {
   app.Post("/signin/oh", handlers.SignIn)
   app.Post("/otp/:email/:password", handlers.VerifyOTP)
 
+	app.Get("/auth/google", handlers.AuthGoogle)
+	app.Get("/auth/google/callback", handlers.CallbackGoogle) 
+
+  app.Get("/auth/github", handlers.AuthGitHub)
+  app.Get("/auth/github/callback", handlers.CallbackGitHub)
+
   app.Listen(":8080")
 }
