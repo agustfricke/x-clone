@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/agustfricke/x-clone/database"
 	"github.com/agustfricke/x-clone/handlers"
+	"github.com/agustfricke/x-clone/middleware"
 	"github.com/agustfricke/x-clone/views"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
@@ -22,7 +23,7 @@ func main() {
 
   app.Get("/sign_up_view", views.SignUpView)
   app.Get("/sign_in_view", views.SignInView)
-  app.Get("/home", views.HomeView)
+  app.Get("/home", middleware.DeserializeUser, views.HomeView)
   app.Get("/", views.RootView)
   app.Get("/notifications", views.NotificationView)
   app.Post("/signup", handlers.SignUp)
