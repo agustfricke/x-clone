@@ -23,6 +23,7 @@ func main() {
   app.Get("/sign_up_view", views.SignUpView)
   app.Get("/sign_in_view", views.SignInView)
   app.Get("/home", views.HomeView)
+  app.Get("/", views.RootView)
   app.Post("/signup", handlers.SignUp)
   app.Get("/verify/:token", handlers.VerifyEmail)
   app.Get("/get/user/", handlers.AllUsers)

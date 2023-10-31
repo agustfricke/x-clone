@@ -29,8 +29,9 @@
     <script>
       var currentPath = window.location.pathname;
       if (
-        currentPath.startsWith("/sign_up_view") ||
-        currentPath.startsWith("/sign_in_view")
+        currentPath === "/sign_up_view" ||
+        currentPath === "/sign_in_view" ||
+        currentPath === "/"
       ) {
         var gridMeDaddy = document.getElementById("grid-me-daddy");
         if (gridMeDaddy) {
