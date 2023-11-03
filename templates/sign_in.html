@@ -168,7 +168,7 @@
           console.error("Error en la solicitud: ");
         });
 
-    }
+    }); // <--- Add this closing parenthesis
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
@@ -176,7 +176,7 @@
       var email = document.getElementById("email").value;
       var password = document.getElementById("password").value;
 
-      form.style.display = "none";
+      form.style display = "none";
 
       loadingMessage.style.display = "block";
 
@@ -204,5 +204,5 @@
           console.error("Error en la solicitud: ");
         });
     });
-  });
+  }); // <--- Add this closing parenthesis
 </script>

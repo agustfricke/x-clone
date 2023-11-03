@@ -12,49 +12,47 @@ import (
 )
 
 func DeserializeUser(c *fiber.Ctx) error {
-	var tokenString string
-	authorization := c.Get("Authorization")
+  var tokenString string
+  authorization := c.Get("Authorization")
 
-	if strings.HasPrefix(authorization, "Bearer ") {
-		tokenString = strings.TrimPrefix(authorization, "Bearer ")
-	} else if c.Cookies("token") != "" {
-		tokenString = c.Cookies("token")
-	}
+  if strings.HasPrefix(authorization, "Bearer ") {
+    tokenString = strings.TrimPrefix(authorization, "Bearer ")
+  } else if c.Cookies("token") != "" {
+    tokenString = c.Cookies("token")
+  }
 
-	if tokenString == "" {
+  if tokenString == "" {
     c.Redirect("/")
     return nil
-	}
+  }
 
-	tokenByte, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
-		if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("unexpected signing method: %s", jwtToken.Header["alg"])
-		}
-
+  tokenByte, err := jwt.Parse(tokenString, func(jwtToken *jwt.Token) (interface{}, error) {
+    if _, ok := jwtToken.Method.(*jwt.SigningMethodHMAC); !ok {
+      return nil, fmt.Errorf("unexpected signing method: %s", jwtToken.Header["alg"])
+    }
     return []byte(config.Config("SECRET_KEY")), nil
-	})
+  })
 
-	if err != nil {
+  if err != nil {
     c.Redirect("/")
     return nil
-	}
+  }
 
-	claims, ok := tokenByte.Claims.(jwt.MapClaims)
-	if !ok || !tokenByte.Valid {
+  claims, ok := tokenByte.Claims.(jwt.MapClaims)
+  if !ok || !tokenByte.Valid {
     c.Redirect("/")
     return nil
-	}
+  }
 
-	var user models.User
+  var user models.User
   db := database.DB
-	db.First(&user, "id = ?", fmt.Sprint(claims["sub"]))
+  db.First(&user, "id = ?", fmt.Sprint(claims["sub"]))
 
-	if float64(user.ID) != claims["sub"] {
-    c.Redirect("/")
-    return nil
-	}
+  if float64(user.ID) != claims["sub"] {
+    return c.Status(fiber.StatusForbidden).JSON(fiber.Map{"status": "fail", "message": "the user belonging to this token no logger exists"})
+  }
 
-	c.Locals("user", &user)
+  c.Locals("user", &user)
 
-	return c.Next()
+  return c.Next()
 }

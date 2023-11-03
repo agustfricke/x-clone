@@ -202,6 +202,73 @@ func SignIn(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "success", "token": tokenString})
 }
 
+func DisableOTP(c *fiber.Ctx) error {
+	  tokenUser := c.Locals("user").(*models.User)
+
+    var user models.User
+    db := database.DB
+    result := db.First(&user, "id = ?", tokenUser.ID)
+    if result.Error != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "status":  "fail",
+            "message": "El usuario no existe",
+        })
+    }
+
+    user.OtpEnabled = false
+    db.Save(&user)
+
+    userResponse := fiber.Map{
+        "id":          user.ID,
+        "name":        user.Name,
+        "email":       user.Email,
+        "otp_enabled": user.OtpEnabled,
+    }
+
+    return c.JSON(fiber.Map{
+        "otp_disabled": false,
+        "user":         userResponse,
+    })
+}
+
+func GenerateOTP(c *fiber.Ctx) error {
+	  tokenUser := c.Locals("user").(*models.User)
+
+    key, err := totp.Generate(totp.GenerateOpts{
+        Issuer:      "X",
+        AccountName: tokenUser.Email,
+        SecretSize:  15,
+    })
+
+    if err != nil {
+        panic(err)
+    }
+
+    var user models.User
+    db := database.DB
+    result := db.First(&user, "id = ?", tokenUser.ID)
+    if result.Error != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+            "status":  "fail",
+            "message": "Correo electrónico o contraseña no válidos",
+        })
+    }
+
+    dataToUpdate := models.User{
+        OtpSecret:   key.Secret(),
+        OtpAuthURL: key.URL(),
+    }
+
+    db.Model(&user).Updates(dataToUpdate)
+
+    otpResponse := fiber.Map{
+        "base32":      key.Secret(),
+        "otpauth_url": key.URL(),
+    }
+
+    return c.JSON(otpResponse)
+}
+
 func VerifyOTP(c *fiber.Ctx) error {
   email := c.Params("email")
   password := c.Params("password")
