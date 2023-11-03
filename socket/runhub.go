@@ -1,6 +1,7 @@
 package socket
 
 import (
+	"encoding/json"
 	"log"
 
 	"github.com/gofiber/contrib/websocket"

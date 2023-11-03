@@ -102,25 +102,16 @@
     var conn;
     var msg = document.getElementById("msg");
 
-    function appendLog(item) {
-      var keyValuePairs = item.split(" || ");
-      var data = {};
-      for (var i = 0; i < keyValuePairs.length; i++) {
-        var pair = keyValuePairs[i].split(":");
-        var key = pair[0].trim();
-        var value = pair[1].trim();
-        data[key] = value;
-      }
-
+    function appendLog(data) {
       const card = document.createElement("div");
 
       card.innerHTML = `
-            <div id="innerHTML_${data.id}">
-      <h5>${data.id} - ${data.title}</h5>
-      <button id="delete_${data.id}">Delete</button>
-      <button id="edit_${data.id}">Edit</button>
-            </div>
-  `;
+        <div id="innerHTML_${data.id}">
+          <h5 class="text-red-200">${data.title}</h5>
+          <button id="delete_${data.id}">Delete</button>
+          <button id="edit_${data.id}">Edit</button>
+        </div>
+      `;
 
       const container = document.getElementById("log");
       container.appendChild(card);
@@ -132,17 +123,41 @@
         const currentTitle = data.title;
 
         const inputField = document.createElement("input");
+        const classesToAdd = [
+          "w-full",
+          "mb-3",
+          "mt-7",
+          "bg-transparent",
+          "outline-none",
+          "border-b",
+          "border-zinc-600",
+        ];
+
+        // Agregar cada clase individualmente
+        classesToAdd.forEach((className) => {
+          inputField.classList.add(className);
+        });
         inputField.value = currentTitle;
 
         const saveButton = document.createElement("button");
         saveButton.innerText = "Guardar";
 
         saveButton.addEventListener("click", () => {
-          let old = `id: ${data.id} || title: ${data.title} || action: delete`;
-          let newM = `id: ${data.id} || title: ${inputField.value} || action: normal`;
-          console.log("input", inputField.value, "data", data);
-          conn.send(old);
-          conn.send(newM);
+          const updatedMessage = {
+            id: data.id,
+            title: inputField.value,
+            action: "normal",
+          };
+
+          var oldMessage = {
+            id: data.id,
+            title: data.title,
+            action: "delete",
+          };
+
+          conn.send(JSON.stringify(updatedMessage));
+          conn.send(JSON.stringify(oldMessage));
+
           me.removeChild(inputField);
           me.removeChild(saveButton);
         });
@@ -154,8 +169,13 @@
 
       const deleteButton = document.getElementById(`delete_${data.id}`);
       deleteButton.addEventListener("click", function () {
-        let format = `id: ${data.id} || title: ${data.title} || action: delete`;
-        conn.send(format);
+        const deleteMessage = {
+          id: data.id,
+          title: data.title,
+          action: "delete",
+        };
+
+        conn.send(JSON.stringify(deleteMessage));
       });
     }
 
@@ -166,6 +186,7 @@
       if (!msg.value) {
         return false;
       }
+
       function generateRandomId() {
         const timestamp = new Date().getTime();
         const randomNum = Math.floor(Math.random() * 10000);
@@ -173,8 +194,13 @@
       }
 
       const randomId = generateRandomId();
+      const newMessage = {
+        id: randomId,
+        title: msg.value,
+        action: "normal",
+      };
 
-      conn.send(`id: ${randomId} || title: ${msg.value} || action: normal`);
+      conn.send(JSON.stringify(newMessage));
       msg.value = "";
       return false;
     };
@@ -190,10 +216,11 @@
         var message = evt.data;
 
         if (message.startsWith("Deleted message: ")) {
-          var deletedMessage = message.substring("Deleted message: ".length);
+          var startIndex = message.indexOf("{");
+          var jsonPart = message.slice(startIndex);
+          var jsonObject = JSON.parse(jsonPart);
 
-          var match = message.match(/id: (\d+)/);
-          var id = match[1];
+          var id = jsonObject.id;
           messageToDel = `innerHTML_${id}`;
           messageToDelInTheDom = document.getElementById(`innerHTML_${id}`);
           let otherId = messageToDelInTheDom.id;
@@ -201,7 +228,8 @@
             messageToDelInTheDom.remove();
           }
         } else {
-          appendLog(message);
+          var jsonMessage = JSON.parse(evt.data);
+          appendLog(jsonMessage);
         }
       };
     } else {

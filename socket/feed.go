@@ -1,13 +1,18 @@
 package socket
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 
 	"github.com/gofiber/contrib/websocket"
 )
 
+type WebSocketMessage struct {
+    ID     string `json:"id"`
+    Title  string `json:"title"`
+    Action string `json:"action"`
+}
 
 func FeedWebsocket(c *websocket.Conn) {
     defer func() {
@@ -28,31 +33,29 @@ func FeedWebsocket(c *websocket.Conn) {
 
       if messageType == websocket.TextMessage {
 
-        messageStr := string(message)
-        log.Println("websocket message received:", messageStr)
-
-        parts := strings.Split(messageStr, " || ")
-        data := make(map[string]string)
-
-        for _, part := range parts {
-          keyValue := strings.Split(part, ": ")
-          if len(keyValue) == 2 {
-            key := strings.TrimSpace(keyValue[0])
-            value := strings.TrimSpace(keyValue[1])
-            data[key] = value
+        var wsMessage WebSocketMessage
+        err := json.Unmarshal(message, &wsMessage)
+        if err != nil {
+          log.Println("Error al decodificar el mensaje JSON:", err)
+          continue
           }
-        }
 
-        id := data["id"]
-        title := data["title"]
-        action := data["action"]
+        id := wsMessage.ID
+        title := wsMessage.Title
+        action := wsMessage.Action
 
-        if (action == "delete") {
-          messageToBeDeleted := fmt.Sprintf("id: %s || title: %s || action: normal", id, title)
-          deleteMessage <- messageToBeDeleted
-          fmt.Println("El mensaje se elimino")
+        if action == "delete" {
+          newMessage := WebSocketMessage{
+            ID:     id,
+            Title:  title,
+            Action: "normal",
+          }
+          messageToBeDeleted, _ := json.Marshal(newMessage)
+          deleteMessage <- string(messageToBeDeleted)
+          fmt.Println("El mensaje se eliminó")
         } else {
-          broadcast <- messageStr
+          // Reenviar el mensaje JSON original
+          broadcast <- string(message)
         }
       }
     }
