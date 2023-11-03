@@ -8,13 +8,18 @@ import (
 	"github.com/gofiber/contrib/websocket"
 )
 
+
 type WebSocketMessage struct {
     ID     string `json:"id"`
     Title  string `json:"title"`
     Action string `json:"action"`
 }
 
+
 func FeedWebsocket(c *websocket.Conn) {
+    // Get user profile 
+	  // user := c.Locals("user").(*models.User)
+
     defer func() {
       unregister <- c
       c.Close()

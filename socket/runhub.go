@@ -2,10 +2,15 @@ package socket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/gofiber/contrib/websocket"
 )
+
+type Message struct {
+	Repo *MessageStore 
+}
 
 func RunHub() {
   for {
@@ -25,6 +30,10 @@ func RunHub() {
 
     case message := <-broadcast:
       log.Println("message received:", message)
+
+      var messageJson WebSocketMessage
+      json.Unmarshal([]byte(message), &messageJson)
+      fmt.Println("Heyy", messageJson)
 
       MessageStorage.Lock()
       MessageStorage.Client.LPush(MessageStorage.Client.Context(), "messages", message)
@@ -77,3 +86,4 @@ func RunHub() {
     }
   }
 }
+
